@@ -32,6 +32,13 @@ export default {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
+        chatbot: {
+          primary: '#8B5CF6',
+          secondary: '#7E69AB',
+          accent: '#0EA5E9',
+          light: '#F1F0FB',
+          dark: '#1A1F2C',
+        },
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
