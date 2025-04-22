@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 import Message from "./Message";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
@@ -22,6 +23,7 @@ const ChatBot = () => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,33 +33,48 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const simulateBotResponse = (userMessage: string) => {
+  const handleBotResponse = async (userMessage: string) => {
     setIsTyping(true);
     
-    // Simulate thinking time
-    setTimeout(() => {
-      const responses = [
-        "That's interesting! Tell me more.",
-        "I understand. How can I help you further?",
-        "I'm here to assist you with any questions.",
-        "Could you provide more details?",
-        "That's a great question! Let me help you with that.",
-      ];
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          content: randomResponse,
-          isBot: true,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    try {
+      const response = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]);
+        body: JSON.stringify({ query: userMessage }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from bot');
+      }
+
+      const botResponses: string[] = await response.json();
       
+      // Add each part of the response as a separate message
+      for (const responseContent of botResponses) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString() + Math.random(),
+            content: responseContent,
+            isBot: true,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+        // Small delay between messages for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get response from the chatbot. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Chat error:", error);
+    } finally {
       setIsTyping(false);
-    }, 1500); // Simulate 1.5 seconds delay
+    }
   };
 
   const handleSendMessage = (content: string) => {
@@ -69,14 +86,14 @@ const ChatBot = () => {
     };
     
     setMessages((prev) => [...prev, newMessage]);
-    simulateBotResponse(content);
+    handleBotResponse(content);
   };
 
   return (
     <div className="flex flex-col bg-chatbot-light h-[600px] rounded-xl shadow-lg overflow-hidden border border-gray-200">
       <div className="bg-white border-b px-4 py-3">
         <h2 className="font-semibold text-lg">ModernChat</h2>
-        <p className="text-sm text-gray-500">Ask me anything</p>
+        <p className="text-sm text-gray-500">Ask me anything about your documents</p>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white to-chatbot-light/50">
@@ -99,3 +116,4 @@ const ChatBot = () => {
 };
 
 export default ChatBot;
+
