@@ -2,19 +2,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { componentTagger } from "lovable-tagger";
 
-// Updated configuration to fix JSX runtime issues
-export default defineConfig({
+// Configuration with componentTagger for Lovable features
+export default defineConfig(({ mode }) => ({
   server: {
-    host: "localhost",
+    host: "::",
     port: 8080,
   },
   plugins: [
     react({
-      jsxImportSource: "react", 
-      jsxRuntime: "automatic"
+      jsxImportSource: "react"
     }),
-  ],
+    mode === 'development' && componentTagger(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -24,7 +25,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ["react", "react-dom"],
     esbuildOptions: {
-      // Configure JSX in esbuild to ensure proper transformation
       jsx: "automatic",
     }
   },
@@ -33,7 +33,6 @@ export default defineConfig({
     sourcemap: true,
     minify: "esbuild",
     rollupOptions: {
-      // Ensure proper externalization of React
       external: [],
       output: {
         manualChunks: {
@@ -42,4 +41,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));
