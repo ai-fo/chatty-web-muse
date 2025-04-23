@@ -3,27 +3,43 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// Configuration simplifiée pour minimiser les problèmes de dépendances
+// Updated configuration to fix JSX runtime issues
 export default defineConfig({
   server: {
     host: "localhost",
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      jsxImportSource: "react", 
+      jsxRuntime: "automatic"
+    }),
   ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Désactiver les optimisations qui peuvent causer des problèmes
+  // Enable optimizeDeps for better dependency handling
   optimizeDeps: {
-    disabled: true
+    include: ["react", "react-dom"],
+    esbuildOptions: {
+      // Configure JSX in esbuild to ensure proper transformation
+      jsx: "automatic",
+    }
   },
-  // Simplifier la construction
+  // Improved build settings
   build: {
-    sourcemap: false,
-    minify: false
+    sourcemap: true,
+    minify: "esbuild",
+    rollupOptions: {
+      // Ensure proper externalization of React
+      external: [],
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+        },
+      }
+    }
   }
 });
