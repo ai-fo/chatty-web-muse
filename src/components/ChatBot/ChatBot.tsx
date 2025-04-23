@@ -92,7 +92,7 @@ const ChatBot = () => {
   return (
     <div className="flex flex-col bg-chatbot-light h-[600px] rounded-xl shadow-lg overflow-hidden border border-gray-200">
       <div className="bg-white border-b px-4 py-3">
-        <h2 className="font-semibold text-lg">ModernChat</h2>
+        <h2 className="font-semibold text-lg">ChatHotline</h2>
         <p className="text-sm text-gray-500">Ask me anything about your documents</p>
       </div>
       
